@@ -5,7 +5,7 @@ CREATE TABLE users (
     PRIMARY KEY (id)
 );
 
-CREATE TABLE brewery (
+CREATE TABLE breweries (
     id SERIAL,
     email VARCHAR(50) NOT NULL UNIQUE,
     password_hash VARCHAR(60) NOT NULL,

@@ -18,3 +18,10 @@ type UserUpdateDTO struct {
 	NewPassword        string `json:"newPassword"`
 	NewPasswordConfirm string `json:"newPasswordConfirm"`
 }
+
+func TestUser() *User {
+	return &User{
+		Email:        "example@exml.com",
+		PasswordHash: "n28ygr923hr8r6g83rh923ygr283gr9u23hr",
+	}
+}
