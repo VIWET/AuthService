@@ -2,7 +2,7 @@ package teststore
 
 import (
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
-	"github.com/VIWET/Beeracle/AuthService/internal/repository"
+	"github.com/VIWET/Beeracle/AuthService/internal/errors"
 )
 
 type TestUserRepository struct {
@@ -25,7 +25,7 @@ func (r *TestUserRepository) Create(u *domain.User) error {
 func (r *TestUserRepository) GetById(id int) (*domain.User, error) {
 	u, ok := r.db[id]
 	if !ok {
-		return nil, repository.ErrRecordNotFound
+		return nil, errors.ErrRecordNotFound
 	}
 
 	return u, nil
@@ -38,13 +38,13 @@ func (r *TestUserRepository) GetByEmail(email string) (*domain.User, error) {
 		}
 	}
 
-	return nil, repository.ErrRecordNotFound
+	return nil, errors.ErrRecordNotFound
 }
 
 func (r *TestUserRepository) Update(u *domain.User) error {
 	u, ok := r.db[u.ID]
 	if !ok {
-		return repository.ErrRecordNotFound
+		return errors.ErrRecordNotFound
 	}
 
 	r.db[u.ID] = u
@@ -54,7 +54,7 @@ func (r *TestUserRepository) Update(u *domain.User) error {
 func (r *TestUserRepository) Delete(id int) error {
 	u, ok := r.db[id]
 	if !ok {
-		return repository.ErrRecordNotFound
+		return errors.ErrRecordNotFound
 	}
 
 	delete(r.db, u.ID)

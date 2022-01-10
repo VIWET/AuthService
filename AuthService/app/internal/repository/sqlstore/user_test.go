@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
-	"github.com/VIWET/Beeracle/AuthService/internal/repository"
+	"github.com/VIWET/Beeracle/AuthService/internal/errors"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository/sqlstore"
 	"github.com/stretchr/testify/assert"
 )
@@ -28,7 +28,7 @@ func TestUserRepository_GetByID(t *testing.T) {
 	r := sqlstore.NewUserRepository(db)
 
 	_, err := r.GetById(0)
-	assert.EqualError(t, err, repository.ErrRecordNotFound.Error())
+	assert.EqualError(t, err, errors.ErrRecordNotFound.Error())
 
 	u := domain.TestUser()
 
@@ -48,7 +48,7 @@ func TestUserRepository_GetByEmail(t *testing.T) {
 	r := sqlstore.NewUserRepository(db)
 
 	_, err := r.GetByEmail("example@exml.com")
-	assert.EqualError(t, err, repository.ErrRecordNotFound.Error())
+	assert.EqualError(t, err, errors.ErrRecordNotFound.Error())
 
 	u := domain.TestUser()
 
@@ -68,7 +68,7 @@ func TestUserRepository_Update(t *testing.T) {
 	r := sqlstore.NewUserRepository(db)
 	u := domain.TestUser()
 
-	assert.EqualError(t, r.Update(u), repository.ErrRecordNotFound.Error())
+	assert.EqualError(t, r.Update(u), errors.ErrRecordNotFound.Error())
 
 	oldPwd := "example1"
 	u.PasswordHash = oldPwd
@@ -92,7 +92,7 @@ func TestUserRepository_Delete(t *testing.T) {
 	r := sqlstore.NewUserRepository(db)
 	u := domain.TestUser()
 
-	assert.EqualError(t, r.Delete(u.ID), repository.ErrRecordNotFound.Error())
+	assert.EqualError(t, r.Delete(u.ID), errors.ErrRecordNotFound.Error())
 
 	if err := r.Create(u); err != nil {
 		t.Fatal("error on creating:", err)
@@ -100,5 +100,5 @@ func TestUserRepository_Delete(t *testing.T) {
 
 	assert.NoError(t, r.Delete(u.ID))
 	_, err := r.GetById(u.ID)
-	assert.EqualError(t, err, repository.ErrRecordNotFound.Error())
+	assert.EqualError(t, err, errors.ErrRecordNotFound.Error())
 }
