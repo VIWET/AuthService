@@ -23,6 +23,8 @@ func (s *Server) Run() error {
 		return err
 	}
 
+	s.logger.Info(fmt.Sprintf("database on: %s", s.config.DBConfig.GetConnectionString()))
+
 	s.logger.Info(fmt.Sprintf("logger configured on level: %s", s.config.LogLevel))
 
 	return nil
