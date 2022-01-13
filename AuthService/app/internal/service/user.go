@@ -1,6 +1,8 @@
 package service
 
 import (
+	"context"
+
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository"
 )
@@ -15,7 +17,7 @@ func NewUserService(r repository.UserRepository) *UserService {
 	}
 }
 
-func (s *UserService) Create(dto *domain.UserCreateDTO) (*domain.User, error) {
+func (s *UserService) SignUp(ctx context.Context, dto *domain.UserCreateDTO) (*domain.User, error) {
 	if err := dto.Validate(); err != nil {
 		return nil, err
 	}

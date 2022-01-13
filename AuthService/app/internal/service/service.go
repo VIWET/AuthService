@@ -1,16 +1,19 @@
 package service
 
 import (
+	"context"
+
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User interface {
-	Create(*domain.UserCreateDTO) (*domain.User, error)
-	GetById(int) (*domain.User, error)
-	GetByEmail(string) (*domain.User, error)
-	Update(*domain.UserUpdateDTO) error
-	Delete(int) error
+	SignUp(context.Context, *domain.UserCreateDTO) (*domain.User, error)
+	SignIn(context.Context, *domain.UserSignIn) error
+	GetById(context.Context, int) (*domain.User, error)
+	GetByEmail(context.Context, string) (*domain.User, error)
+	Update(context.Context, *domain.UserUpdateDTO) error
+	Delete(context.Context, int) error
 }
 
 type Services struct {

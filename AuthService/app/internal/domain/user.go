@@ -11,7 +11,12 @@ var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-
 type User struct {
 	ID           int    `json:"id"`
 	Email        string `json:"email"`
-	PasswordHash string `json:"password"`
+	PasswordHash string `json:"-"`
+}
+
+type UserSignIn struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type UserCreateDTO struct {

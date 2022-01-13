@@ -1,6 +1,7 @@
 package service_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
@@ -10,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestUserService_Create(t *testing.T) {
+func TestUserService_SignUp(t *testing.T) {
 	r := teststore.NewTestUserRepository()
 
 	s := service.NewUserService(r)
@@ -73,6 +74,8 @@ func TestUserService_Create(t *testing.T) {
 		},
 	}
 
+	ctx := context.Background()
+
 	for _, c := range tests {
 		dto := &domain.UserCreateDTO{
 			Email:           c.Email,
@@ -80,11 +83,11 @@ func TestUserService_Create(t *testing.T) {
 			PasswordConfirm: c.PasswordConfirm,
 		}
 		if c.Valid {
-			u, err := s.Create(dto)
+			u, err := s.SignUp(ctx, dto)
 			assert.NoError(t, err)
 			assert.NotNil(t, u)
 		} else {
-			u, err := s.Create(dto)
+			u, err := s.SignUp(ctx, dto)
 			assert.EqualError(t, err, c.Err.Error())
 			assert.Nil(t, u)
 		}
