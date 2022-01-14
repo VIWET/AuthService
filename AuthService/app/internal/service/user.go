@@ -8,19 +8,19 @@ import (
 	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
 )
 
-type UserService struct {
+type userService struct {
 	r repository.UserRepository
 	m jwt.TokenManager
 }
 
-func NewUserService(r repository.UserRepository, m jwt.TokenManager) *UserService {
-	return &UserService{
+func NewUserService(r repository.UserRepository, m jwt.TokenManager) User {
+	return &userService{
 		r: r,
 		m: m,
 	}
 }
 
-func (s *UserService) SignUp(ctx context.Context, dto *domain.UserCreateDTO, role string) (*domain.User, jwt.Tokens, error) {
+func (s *userService) SignUp(ctx context.Context, dto *domain.UserCreateDTO, role string) (*domain.User, jwt.Tokens, error) {
 	tokens := jwt.Tokens{}
 	if err := dto.Validate(); err != nil {
 		return nil, tokens, err

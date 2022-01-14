@@ -1,7 +1,6 @@
 package sqlstore_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
@@ -65,8 +64,6 @@ func TestUserRepository_GetByEmail(t *testing.T) {
 	ut, err := r.GetByEmail(u.Email)
 	assert.NoError(t, err)
 	assert.Equal(t, u, ut)
-
-	fmt.Println(ut)
 }
 
 func TestUserRepository_Update(t *testing.T) {

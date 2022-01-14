@@ -4,12 +4,13 @@ import (
 	"context"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
+	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User interface {
-	SignUp(context.Context, *domain.UserCreateDTO) (string, string, error)
-	SignIn(context.Context, *domain.UserSignIn) (string, string, error)
+	SignUp(context.Context, *domain.UserCreateDTO, string) (*domain.User, jwt.Tokens, error)
+	// SignIn(context.Context, *domain.UserSignIn) (string, string, error)
 }
 
 type Services struct {

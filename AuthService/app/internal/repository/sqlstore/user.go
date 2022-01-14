@@ -5,19 +5,20 @@ import (
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/errors"
+	"github.com/VIWET/Beeracle/AuthService/internal/repository"
 )
 
-type UserRepository struct {
+type userRepository struct {
 	db *sql.DB
 }
 
-func NewUserRepository(db *sql.DB) *UserRepository {
-	return &UserRepository{
+func NewUserRepository(db *sql.DB) repository.UserRepository {
+	return &userRepository{
 		db: db,
 	}
 }
 
-func (r *UserRepository) Create(u *domain.User) error {
+func (r *userRepository) Create(u *domain.User) error {
 	var role_id int
 	switch u.Role {
 	case "admin":
@@ -47,7 +48,7 @@ func (r *UserRepository) Create(u *domain.User) error {
 	return nil
 }
 
-func (r *UserRepository) GetById(id int) (*domain.User, error) {
+func (r *userRepository) GetById(id int) (*domain.User, error) {
 	u := &domain.User{}
 	if err := r.db.QueryRow(
 		"SELECT u.id, u.email, u.password_hash, r.role_name, CASE WHEN r.role_name = 'brewery' THEN ub.id ELSE up.id END "+
@@ -67,7 +68,7 @@ func (r *UserRepository) GetById(id int) (*domain.User, error) {
 	return u, nil
 }
 
-func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {
+func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 	u := &domain.User{}
 	if err := r.db.QueryRow(
 		"SELECT u.id, u.email, u.password_hash, r.role_name, CASE WHEN r.role_name = 'brewery' THEN ub.id ELSE up.id END "+
@@ -87,7 +88,7 @@ func (r *UserRepository) GetByEmail(email string) (*domain.User, error) {
 	return u, nil
 }
 
-func (r *UserRepository) Update(u *domain.User) error {
+func (r *userRepository) Update(u *domain.User) error {
 	err := r.db.QueryRow("UPDATE users SET email = $1, password_hash = $2 WHERE id = $3 RETURNING id", u.Email, u.PasswordHash, u.ID).Scan(&u.ID)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -98,7 +99,7 @@ func (r *UserRepository) Update(u *domain.User) error {
 	return nil
 }
 
-func (r *UserRepository) Delete(id int) error {
+func (r *userRepository) Delete(id int) error {
 	err := r.db.QueryRow("DELETE FROM users WHERE id = $1 RETURNING id", id).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {

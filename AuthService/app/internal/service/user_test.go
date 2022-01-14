@@ -2,7 +2,6 @@ package service_test
 
 import (
 	"context"
-	"fmt"
 	"strconv"
 	"testing"
 
@@ -128,7 +127,6 @@ func TestUserService_SignUp(t *testing.T) {
 			}
 			assert.Equal(t, u.Profile_ID, profId)
 			assert.Equal(t, u.Role, role)
-			fmt.Println(tokens)
 		} else {
 			u, tokens, err := s.SignUp(ctx, dto, c.Role)
 			assert.EqualError(t, err, c.Err.Error())
