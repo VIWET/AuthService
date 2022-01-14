@@ -8,12 +8,8 @@ import (
 )
 
 type User interface {
-	SignUp(context.Context, *domain.UserCreateDTO) (*domain.User, error)
-	SignIn(context.Context, *domain.UserSignIn) error
-	GetById(context.Context, int) (*domain.User, error)
-	GetByEmail(context.Context, string) (*domain.User, error)
-	Update(context.Context, *domain.UserUpdateDTO) error
-	Delete(context.Context, int) error
+	SignUp(context.Context, *domain.UserCreateDTO) (string, string, error)
+	SignIn(context.Context, *domain.UserSignIn) (string, string, error)
 }
 
 type Services struct {

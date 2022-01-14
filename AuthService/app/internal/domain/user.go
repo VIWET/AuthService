@@ -11,6 +11,8 @@ var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-
 type User struct {
 	ID           int    `json:"id"`
 	Email        string `json:"email"`
+	Role         string `json:"role"`
+	Profile_ID   int    `json:"profile_id"`
 	PasswordHash string `json:"-"`
 }
 
@@ -26,22 +28,32 @@ type UserCreateDTO struct {
 }
 
 type UserUpdateDTO struct {
-	Email              string `json:"email"`
-	OldPassword        string `json:"oldPassword"`
-	NewPassword        string `json:"newPassword"`
-	NewPasswordConfirm string `json:"newPasswordConfirm"`
+	Email              string `json:"email,omitempty"`
+	OldPassword        string `json:"oldPassword,omitempty"`
+	NewPassword        string `json:"newPassword,omitempty"`
+	NewPasswordConfirm string `json:"newPasswordConfirm,omitempty"`
 }
 
 func TestUser() *User {
 	return &User{
 		Email:        "example@exml.com",
+		Role:         "user",
 		PasswordHash: "n28ygr923hr8r6g83rh923ygr283gr9u23hr",
 	}
 }
 
-func NewUser(email string, passwordHash string) *User {
+func TestBrewery() *User {
+	return &User{
+		Email:        "brew@exml.com",
+		Role:         "brewery",
+		PasswordHash: "n28ygr923hr8r6g83rh923ygr283gr9u23hr",
+	}
+}
+
+func NewUser(email string, role string, passwordHash string) *User {
 	return &User{
 		Email:        email,
+		Role:         role,
 		PasswordHash: passwordHash,
 	}
 }

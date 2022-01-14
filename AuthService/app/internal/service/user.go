@@ -5,45 +5,51 @@ import (
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository"
+	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
 )
 
 type UserService struct {
 	r repository.UserRepository
+	m jwt.TokenManager
 }
 
-func NewUserService(r repository.UserRepository) *UserService {
+func NewUserService(r repository.UserRepository, m jwt.TokenManager) *UserService {
 	return &UserService{
 		r: r,
+		m: m,
 	}
 }
 
-func (s *UserService) SignUp(ctx context.Context, dto *domain.UserCreateDTO) (*domain.User, error) {
+func (s *UserService) SignUp(ctx context.Context, dto *domain.UserCreateDTO, role string) (*domain.User, jwt.Tokens, error) {
+	tokens := jwt.Tokens{}
 	if err := dto.Validate(); err != nil {
-		return nil, err
+		return nil, tokens, err
 	}
 
 	hash, err := GeneratePasswordHash(dto.Password)
 	if err != nil {
-		return nil, err
+		return nil, tokens, err
 	}
 
-	u := domain.NewUser(dto.Email, hash)
+	u := domain.NewUser(dto.Email, role, hash)
 
-	return u, s.r.Create(u)
-}
+	err = s.r.Create(u)
+	if err != nil {
+		return nil, tokens, err
+	}
 
-func (s *UserService) GetById(id int) (*domain.User, error) {
-	return nil, nil
-}
+	accessToken, err := s.m.GenerateToken(u.Profile_ID, u.Email, u.Role)
+	if err != nil {
+		return nil, tokens, err
+	}
 
-func (s *UserService) GetByEmail(email string) (*domain.User, error) {
-	return nil, nil
-}
+	refreshToken, err := s.m.GenerateRefreshToken()
+	if err != nil {
+		return nil, tokens, err
+	}
 
-func (s *UserService) Update(dto *domain.UserUpdateDTO) error {
-	return nil
-}
+	tokens.AccessToken = accessToken
+	tokens.RefreshToken = refreshToken
 
-func (s *UserService) Delete(id int) error {
-	return nil
+	return u, tokens, nil
 }

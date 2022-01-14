@@ -2,33 +2,61 @@ package service_test
 
 import (
 	"context"
+	"fmt"
+	"strconv"
 	"testing"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/errors"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository/teststore"
 	"github.com/VIWET/Beeracle/AuthService/internal/service"
+	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserService_SignUp(t *testing.T) {
 	r := teststore.NewTestUserRepository()
 
-	s := service.NewUserService(r)
+	m, err := jwt.NewTokenManager("123")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := service.NewUserService(r, m)
 
 	tests := []struct {
 		Name            string
 		Email           string
 		Password        string
 		PasswordConfirm string
+		Role            string
 		Valid           bool
 		Err             error
 	}{
 		{
 			Name:            "Valid",
-			Email:           "example@exml.com",
+			Email:           "example1@exml.com",
 			Password:        "example",
 			PasswordConfirm: "example",
+			Role:            "user",
+			Valid:           true,
+			Err:             nil,
+		},
+		{
+			Name:            "Valid",
+			Email:           "brew@exml.com",
+			Password:        "example",
+			PasswordConfirm: "example",
+			Role:            "brewery",
+			Valid:           true,
+			Err:             nil,
+		},
+		{
+			Name:            "Valid",
+			Email:           "example2@exml.com",
+			Password:        "example",
+			PasswordConfirm: "example",
+			Role:            "user",
 			Valid:           true,
 			Err:             nil,
 		},
@@ -37,6 +65,7 @@ func TestUserService_SignUp(t *testing.T) {
 			Email:           "",
 			Password:        "example",
 			PasswordConfirm: "example",
+			Role:            "user",
 			Valid:           false,
 			Err:             errors.ErrEmailIsEmpty,
 		},
@@ -45,6 +74,7 @@ func TestUserService_SignUp(t *testing.T) {
 			Email:           "examexml.com",
 			Password:        "example",
 			PasswordConfirm: "example",
+			Role:            "user",
 			Valid:           false,
 			Err:             errors.ErrEmailIsNotValid,
 		},
@@ -53,6 +83,7 @@ func TestUserService_SignUp(t *testing.T) {
 			Email:           "example@exml.com",
 			Password:        "",
 			PasswordConfirm: "",
+			Role:            "user",
 			Valid:           false,
 			Err:             errors.ErrPasswordIsEmpty,
 		},
@@ -61,6 +92,7 @@ func TestUserService_SignUp(t *testing.T) {
 			Email:           "example@exml.com",
 			Password:        "exa",
 			PasswordConfirm: "example",
+			Role:            "user",
 			Valid:           false,
 			Err:             errors.ErrPasswordLength,
 		},
@@ -69,6 +101,7 @@ func TestUserService_SignUp(t *testing.T) {
 			Email:           "example@exml.com",
 			Password:        "example15",
 			PasswordConfirm: "example",
+			Role:            "user",
 			Valid:           false,
 			Err:             errors.ErrPasswordConfirmation,
 		},
@@ -83,13 +116,25 @@ func TestUserService_SignUp(t *testing.T) {
 			PasswordConfirm: c.PasswordConfirm,
 		}
 		if c.Valid {
-			u, err := s.SignUp(ctx, dto)
+			u, tokens, err := s.SignUp(ctx, dto, c.Role)
 			assert.NoError(t, err)
 			assert.NotNil(t, u)
+			assert.NotEmpty(t, tokens.AccessToken)
+			assert.NotEmpty(t, tokens.RefreshToken)
+			profIdS, role, _ := m.ParseToken(tokens.AccessToken)
+			profId, err := strconv.Atoi(profIdS)
+			if err != nil {
+				t.Fatal(err)
+			}
+			assert.Equal(t, u.Profile_ID, profId)
+			assert.Equal(t, u.Role, role)
+			fmt.Println(tokens)
 		} else {
-			u, err := s.SignUp(ctx, dto)
+			u, tokens, err := s.SignUp(ctx, dto, c.Role)
 			assert.EqualError(t, err, c.Err.Error())
 			assert.Nil(t, u)
+			assert.Empty(t, tokens.AccessToken)
+			assert.Empty(t, tokens.RefreshToken)
 		}
 	}
 }

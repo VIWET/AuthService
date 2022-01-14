@@ -6,17 +6,29 @@ import (
 )
 
 type TestUserRepository struct {
-	db map[int]*domain.User
+	profiles  int
+	breweries int
+	db        map[int]*domain.User
 }
 
 func NewTestUserRepository() *TestUserRepository {
 	return &TestUserRepository{
-		db: make(map[int]*domain.User),
+		profiles:  1,
+		breweries: 1,
+		db:        make(map[int]*domain.User),
 	}
 }
 
 func (r *TestUserRepository) Create(u *domain.User) error {
 	u.ID = len(r.db) + 1
+	if u.Role == "brewery" {
+		u.Profile_ID = r.breweries
+		r.breweries++
+	} else {
+		u.Profile_ID = r.profiles
+		r.profiles++
+	}
+
 	r.db[u.ID] = u
 
 	return nil

@@ -1,6 +1,7 @@
 package sqlstore_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
@@ -11,7 +12,7 @@ import (
 
 func TestUserRepository_Create(t *testing.T) {
 	db, teardown := sqlstore.TestSQLStore(t, config)
-	defer teardown("users")
+	defer teardown("users", "users_breweries", "users_profiles")
 
 	r := sqlstore.NewUserRepository(db)
 
@@ -19,11 +20,16 @@ func TestUserRepository_Create(t *testing.T) {
 
 	assert.NoError(t, r.Create(u))
 	assert.NotEqual(t, 0, u.ID)
+
+	b := domain.TestBrewery()
+
+	assert.NoError(t, r.Create(b))
+	assert.NotEqual(t, 0, b.ID)
 }
 
 func TestUserRepository_GetByID(t *testing.T) {
 	db, teardown := sqlstore.TestSQLStore(t, config)
-	defer teardown("users")
+	defer teardown("users", "users_breweries", "users_profiles")
 
 	r := sqlstore.NewUserRepository(db)
 
@@ -43,7 +49,7 @@ func TestUserRepository_GetByID(t *testing.T) {
 
 func TestUserRepository_GetByEmail(t *testing.T) {
 	db, teardown := sqlstore.TestSQLStore(t, config)
-	defer teardown("users")
+	defer teardown("users", "users_breweries", "users_profiles")
 
 	r := sqlstore.NewUserRepository(db)
 
@@ -59,11 +65,13 @@ func TestUserRepository_GetByEmail(t *testing.T) {
 	ut, err := r.GetByEmail(u.Email)
 	assert.NoError(t, err)
 	assert.Equal(t, u, ut)
+
+	fmt.Println(ut)
 }
 
 func TestUserRepository_Update(t *testing.T) {
 	db, teardown := sqlstore.TestSQLStore(t, config)
-	defer teardown("users")
+	defer teardown("users", "users_breweries", "users_profiles")
 
 	r := sqlstore.NewUserRepository(db)
 	u := domain.TestUser()
@@ -87,7 +95,7 @@ func TestUserRepository_Update(t *testing.T) {
 
 func TestUserRepository_Delete(t *testing.T) {
 	db, teardown := sqlstore.TestSQLStore(t, config)
-	defer teardown("users")
+	defer teardown("users", "users_breweries", "users_profiles")
 
 	r := sqlstore.NewUserRepository(db)
 	u := domain.TestUser()

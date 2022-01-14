@@ -13,7 +13,7 @@ import (
 type TokenManager interface {
 	GenerateToken(int, string, string) (string, error)
 	GenerateRefreshToken() (string, error)
-	ParseToken(string) (string, error)
+	ParseToken(string) (string, string, error)
 }
 
 type Manager struct {

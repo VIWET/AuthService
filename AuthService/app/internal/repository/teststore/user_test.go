@@ -16,6 +16,11 @@ func TestUserRepository_Create(t *testing.T) {
 
 	assert.NoError(t, r.Create(u))
 	assert.NotEqual(t, 0, u.ID)
+
+	b := domain.TestBrewery()
+
+	assert.NoError(t, r.Create(b))
+	assert.NotEqual(t, 0, b.ID)
 }
 
 func TestUserRepository_GetByID(t *testing.T) {

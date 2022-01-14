@@ -10,15 +10,6 @@ type UserRepository interface {
 	Delete(int) error
 }
 
-type BreweryRepository interface {
-	Create(*domain.Brewery) error
-	GetById(int) (*domain.Brewery, error)
-	GetByEmail(string) (*domain.Brewery, error)
-	Update(*domain.Brewery) error
-	Delete(int) error
-}
-
 type Repositories struct {
-	UserRepository    UserRepository
-	BreweryRepository BreweryRepository
+	UserRepository UserRepository
 }
