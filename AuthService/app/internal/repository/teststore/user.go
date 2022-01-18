@@ -23,10 +23,10 @@ func NewTestUserRepository() repository.UserRepository {
 func (r *testUserRepository) Create(u *domain.User) error {
 	u.ID = len(r.db) + 1
 	if u.Role == "brewery" {
-		u.Profile_ID = r.breweries
+		u.ProfileID = r.breweries
 		r.breweries++
 	} else {
-		u.Profile_ID = r.profiles
+		u.ProfileID = r.profiles
 		r.profiles++
 	}
 

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/go-redis/redis/v7"
 	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
@@ -14,6 +15,7 @@ type Server struct {
 	config *Config
 	logger *logrus.Logger
 	db     *sql.DB
+	cache  *redis.Client
 }
 
 func New(config *Config) *Server {
@@ -35,6 +37,12 @@ func (s *Server) Run() error {
 	}
 
 	s.logger.Info(fmt.Sprintf("database on %s:%s", s.config.DBConfig.Host, s.config.DBConfig.Port))
+
+	if err := s.configureCache(); err != nil {
+		return err
+	}
+
+	s.logger.Info(fmt.Sprintf("cache on %s:%s", s.config.CacheConfig.Host, s.config.CacheConfig.Port))
 
 	s.logger.Info(fmt.Sprintf("Serving at http://localhost%s/", s.config.HttpPort))
 
@@ -65,6 +73,23 @@ func (s *Server) configureStore() error {
 	}
 
 	s.db = db
+
+	return nil
+}
+
+func (s *Server) configureCache() error {
+	redis := redis.NewClient(&redis.Options{
+		Addr:     s.config.CacheConfig.GetAddr(),
+		Password: s.config.CacheConfig.Pwd,
+		DB:       s.config.CacheConfig.DB,
+	})
+
+	status := redis.Ping()
+	if err := status.Err(); err != nil {
+		return err
+	}
+
+	s.cache = redis
 
 	return nil
 }

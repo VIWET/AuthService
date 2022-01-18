@@ -1,6 +1,8 @@
 package repository
 
-import "github.com/VIWET/Beeracle/AuthService/internal/domain"
+import (
+	"github.com/VIWET/Beeracle/AuthService/internal/domain"
+)
 
 type UserRepository interface {
 	Create(*domain.User) error
@@ -10,6 +12,12 @@ type UserRepository interface {
 	Delete(int) error
 }
 
+type CacheRepository interface {
+	Set(string, *domain.RefreshSession) error
+	Get(string) (*domain.RefreshSession, error)
+}
+
 type Repositories struct {
 	UserRepository UserRepository
+	Cache          CacheRepository
 }

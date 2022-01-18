@@ -12,7 +12,7 @@ type User struct {
 	ID           int    `json:"id"`
 	Email        string `json:"email"`
 	Role         string `json:"role"`
-	Profile_ID   int    `json:"profile_id"`
+	ProfileID    int    `json:"profileId"`
 	PasswordHash string `json:"-"`
 }
 
@@ -32,6 +32,13 @@ type UserUpdateDTO struct {
 	OldPassword        string `json:"oldPassword,omitempty"`
 	NewPassword        string `json:"newPassword,omitempty"`
 	NewPasswordConfirm string `json:"newPasswordConfirm,omitempty"`
+}
+
+type RefreshSession struct {
+	ProfileID   int    `json:"profileId"`
+	Role        string `json:"role"`
+	UserAgent   string `json:"ua"`
+	Fingerprint string `json:"fingerprint"`
 }
 
 func TestUser() *User {

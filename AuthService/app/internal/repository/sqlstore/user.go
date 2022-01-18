@@ -34,12 +34,12 @@ func (r *userRepository) Create(u *domain.User) error {
 	}
 
 	if role_id == 3 {
-		err = r.db.QueryRow("INSERT INTO users_breweries (user_id) VALUES ($1) RETURNING ID", u.ID).Scan(&u.Profile_ID)
+		err = r.db.QueryRow("INSERT INTO users_breweries (user_id) VALUES ($1) RETURNING ID", u.ID).Scan(&u.ProfileID)
 		if err != nil {
 			return err
 		}
 	} else {
-		err = r.db.QueryRow("INSERT INTO users_profiles (user_id) VALUES ($1) RETURNING ID", u.ID).Scan(&u.Profile_ID)
+		err = r.db.QueryRow("INSERT INTO users_profiles (user_id) VALUES ($1) RETURNING ID", u.ID).Scan(&u.ProfileID)
 		if err != nil {
 			return err
 		}
@@ -58,7 +58,7 @@ func (r *userRepository) GetById(id int) (*domain.User, error) {
 			"LEFT JOIN users_profiles AS up ON up.user_id = u.id "+
 			"WHERE u.id = $1",
 		id,
-	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Role, &u.Profile_ID); err != nil {
+	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Role, &u.ProfileID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.ErrRecordNotFound
 		}
@@ -78,7 +78,7 @@ func (r *userRepository) GetByEmail(email string) (*domain.User, error) {
 			"LEFT JOIN users_profiles AS up ON up.user_id = u.id "+
 			"WHERE u.email = $1 ",
 		email,
-	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Role, &u.Profile_ID); err != nil {
+	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Role, &u.ProfileID); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, errors.ErrRecordNotFound
 		}

@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
-	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
+	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
 	"golang.org/x/crypto/bcrypt"
 )
 

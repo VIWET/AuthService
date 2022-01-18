@@ -45,7 +45,7 @@ func (m *Manager) GenerateToken(id int, email string, role string) (string, erro
 }
 
 func (m *Manager) GenerateRefreshToken() (string, error) {
-	b := make([]byte, 64)
+	b := make([]byte, 32)
 
 	seed := rand.NewSource(time.Now().Unix())
 	random := rand.New(seed)

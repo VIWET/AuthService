@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
-	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
+	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
 
 	"github.com/stretchr/testify/assert"
 )
@@ -31,7 +31,7 @@ func TestManager_ParseToken(t *testing.T) {
 
 	u := domain.TestUser()
 
-	ss, err := m.GenerateToken(u.Profile_ID, u.Email, "user")
+	ss, err := m.GenerateToken(u.ProfileID, u.Email, "user")
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 

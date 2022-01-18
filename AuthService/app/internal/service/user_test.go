@@ -7,21 +7,24 @@ import (
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/errors"
+	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
+	"github.com/VIWET/Beeracle/AuthService/internal/repository/testcache"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository/teststore"
 	"github.com/VIWET/Beeracle/AuthService/internal/service"
-	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestUserService_SignUp(t *testing.T) {
 	r := teststore.NewTestUserRepository()
 
+	cr := testcache.NewTestCacheRepository()
+
 	m, err := jwt.NewTokenManager("123")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	s := service.NewUserService(r, m)
+	s := service.NewUserService(r, m, cr)
 
 	tests := []struct {
 		Name            string
@@ -125,7 +128,7 @@ func TestUserService_SignUp(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			assert.Equal(t, u.Profile_ID, profId)
+			assert.Equal(t, u.ProfileID, profId)
 			assert.Equal(t, u.Role, role)
 		} else {
 			u, tokens, err := s.SignUp(ctx, dto, c.Role)

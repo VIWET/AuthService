@@ -4,19 +4,21 @@ import (
 	"context"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
+	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository"
-	"github.com/VIWET/Beeracle/AuthService/pkg/jwt"
 )
 
 type userService struct {
 	r repository.UserRepository
 	m jwt.TokenManager
+	c repository.CacheRepository
 }
 
-func NewUserService(r repository.UserRepository, m jwt.TokenManager) User {
+func NewUserService(r repository.UserRepository, m jwt.TokenManager, c repository.CacheRepository) User {
 	return &userService{
 		r: r,
 		m: m,
+		c: c,
 	}
 }
 
@@ -38,7 +40,7 @@ func (s *userService) SignUp(ctx context.Context, dto *domain.UserCreateDTO, rol
 		return nil, tokens, err
 	}
 
-	accessToken, err := s.m.GenerateToken(u.Profile_ID, u.Email, u.Role)
+	accessToken, err := s.m.GenerateToken(u.ProfileID, u.Email, u.Role)
 	if err != nil {
 		return nil, tokens, err
 	}
