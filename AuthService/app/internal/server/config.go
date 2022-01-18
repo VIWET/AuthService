@@ -8,6 +8,7 @@ import (
 type Config struct {
 	HttpPort    string          `yaml:"port"`
 	LogLevel    string          `yaml:"logLevel"`
+	Salt        string          `yaml:"salt"`
 	DBConfig    sqlstore.Config `yaml:"db"`
 	CacheConfig cache.Config    `yaml:"cache"`
 }

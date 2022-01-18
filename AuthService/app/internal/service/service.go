@@ -5,6 +5,7 @@ import (
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
+	"github.com/VIWET/Beeracle/AuthService/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -15,6 +16,12 @@ type User interface {
 
 type Services struct {
 	User User
+}
+
+func NewServices(repos *repository.Repositories, tm jwt.TokenManager) *Services {
+	return &Services{
+		User: NewUserService(repos.UserRepository, tm, repos.Cache),
+	}
 }
 
 func GeneratePasswordHash(p string) (string, error) {

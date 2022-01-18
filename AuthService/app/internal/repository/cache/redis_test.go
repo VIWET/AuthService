@@ -48,5 +48,4 @@ func TestRedisCacheRepository_Get(t *testing.T) {
 	rs_test, err := r.Get(rt)
 	assert.NoError(t, err)
 	assert.Equal(t, rs, rs_test)
-
 }

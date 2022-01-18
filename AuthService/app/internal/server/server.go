@@ -5,17 +5,22 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/VIWET/Beeracle/AuthService/internal/delivery/http/handler"
+	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
+	"github.com/VIWET/Beeracle/AuthService/internal/repository/sqlstore"
+	"github.com/VIWET/Beeracle/AuthService/internal/service"
 	"github.com/go-redis/redis/v7"
-	"github.com/gorilla/mux"
 	_ "github.com/lib/pq"
 	"github.com/sirupsen/logrus"
 )
 
 type Server struct {
-	config *Config
-	logger *logrus.Logger
-	db     *sql.DB
-	cache  *redis.Client
+	config       *Config
+	logger       *logrus.Logger
+	db           *sql.DB
+	cache        *redis.Client
+	handler      *handler.Handler
+	tokenManager jwt.TokenManager
 }
 
 func New(config *Config) *Server {
@@ -46,9 +51,16 @@ func (s *Server) Run() error {
 
 	s.logger.Info(fmt.Sprintf("Serving at http://localhost%s/", s.config.HttpPort))
 
-	r := mux.NewRouter()
+	if err := s.configureTokenManager(); err != nil {
+		return err
+	}
 
-	return http.ListenAndServe(s.config.HttpPort, r)
+	repos := sqlstore.NewRepositories(s.db, s.cache, s.config.CacheConfig.Expires)
+	services := service.NewServices(repos, s.tokenManager)
+
+	s.handler = handler.New(services, s.logger)
+
+	return http.ListenAndServe(s.config.HttpPort, s.handler.GetRouter())
 }
 
 func (s *Server) configureLogger() error {
@@ -66,10 +78,12 @@ func (s *Server) configureStore() error {
 	db, err := sql.Open("postgres", s.config.DBConfig.GetConnectionString())
 	if err != nil {
 		s.logger.Fatal(err)
+		return err
 	}
 
 	if err := db.Ping(); err != nil {
 		s.logger.Fatal(err)
+		return err
 	}
 
 	s.db = db
@@ -86,10 +100,23 @@ func (s *Server) configureCache() error {
 
 	status := redis.Ping()
 	if err := status.Err(); err != nil {
+		s.logger.Fatal(err)
 		return err
 	}
 
 	s.cache = redis
+
+	return nil
+}
+
+func (s *Server) configureTokenManager() error {
+	tokenManager, err := jwt.NewTokenManager(s.config.Salt)
+	if err != nil {
+		s.logger.Fatal(err)
+		return err
+	}
+
+	s.tokenManager = tokenManager
 
 	return nil
 }

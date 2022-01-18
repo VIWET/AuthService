@@ -20,7 +20,7 @@ type Manager struct {
 	key []byte
 }
 
-func NewTokenManager(key string) (*Manager, error) {
+func NewTokenManager(key string) (TokenManager, error) {
 	if key == "" {
 		return nil, errors.New("empty token manager key")
 	}
