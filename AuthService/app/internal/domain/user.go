@@ -9,10 +9,10 @@ import (
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 type User struct {
-	ID           int    `json:"id"`
+	ID           int    `json:"-"`
+	ProfileID    int    `json:"id"`
 	Email        string `json:"email"`
 	Role         string `json:"role"`
-	ProfileID    int    `json:"profileId"`
 	PasswordHash string `json:"-"`
 }
 
@@ -29,12 +29,14 @@ type UserCreateDTO struct {
 	Fingerprint     string `json:"fingerprint"`
 }
 
-type UserUpdateDTO struct {
-	Email              string `json:"email,omitempty"`
+type UserUpdateEmailDTO struct {
+	Email string `json:"email,omitempty"`
+}
+
+type UserUpdatePasswordDTO struct {
 	OldPassword        string `json:"oldPassword,omitempty"`
 	NewPassword        string `json:"newPassword,omitempty"`
 	NewPasswordConfirm string `json:"newPasswordConfirm,omitempty"`
-	Fingerprint        string `json:"fingerprint"`
 }
 
 type RefreshSession struct {
@@ -112,7 +114,7 @@ func (dto *UserCreateDTO) Validate() error {
 	return nil
 }
 
-func (dto *UserUpdateDTO) Validate() error {
+func (dto *UserUpdateEmailDTO) Validate() error {
 	if dto.Email == "" {
 		return errors.ErrEmailIsEmpty
 	}
@@ -121,6 +123,10 @@ func (dto *UserUpdateDTO) Validate() error {
 		return errors.ErrEmailIsNotValid
 	}
 
+	return nil
+}
+
+func (dto *UserUpdatePasswordDTO) Validate() error {
 	if dto.OldPassword == dto.NewPassword {
 		return errors.ErrOldPasswordEqualNew
 	}

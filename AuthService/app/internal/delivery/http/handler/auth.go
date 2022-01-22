@@ -187,8 +187,16 @@ func (h *Handler) Delete() http.HandlerFunc {
 }
 
 func (h *Handler) Update() http.HandlerFunc {
+
+	type Update struct {
+		Email              *string `json:"email,omitempty"`
+		OldPassword        *string `json:"oldPassword,omitempty"`
+		NewPassword        *string `json:"newPassword,omitempty"`
+		NewPasswordConfirm *string `json:"newPasswordConfirm,omitempty"`
+	}
+
 	return func(w http.ResponseWriter, r *http.Request) {
-		req := &domain.UserUpdateDTO{}
+		req := &Update{}
 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
 			h.error(w, r, http.StatusUnprocessableEntity, err)
 			return
@@ -200,7 +208,54 @@ func (h *Handler) Update() http.HandlerFunc {
 			return
 		}
 
-		if err := h.services.User.Update(r.Context(), req, cookie.Value); err != nil {
+		if req.Email != nil {
+			emailUpdate := &domain.UserUpdateEmailDTO{
+				Email: *req.Email,
+			}
+
+			if err := h.services.User.UpdateEmail(r.Context(), emailUpdate, cookie.Value); err != nil {
+				switch err {
+				case errors.ErrUnauthorized:
+					h.error(w, r, http.StatusUnauthorized, err)
+					return
+				default:
+					h.error(w, r, http.StatusInternalServerError, err)
+					return
+				}
+			}
+		}
+
+		if req.NewPassword != nil && req.NewPasswordConfirm != nil && req.OldPassword != nil {
+			passwordUpdate := &domain.UserUpdatePasswordDTO{
+				OldPassword:        *req.OldPassword,
+				NewPassword:        *req.NewPassword,
+				NewPasswordConfirm: *req.NewPasswordConfirm,
+			}
+
+			if err := h.services.User.UpdatePassword(r.Context(), passwordUpdate, cookie.Value); err != nil {
+				switch err {
+				case errors.ErrUnauthorized:
+					h.error(w, r, http.StatusUnauthorized, err)
+					return
+				default:
+					h.error(w, r, http.StatusInternalServerError, err)
+					return
+				}
+			}
+		}
+	}
+}
+
+func (h *Handler) GetUserData() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		cookie, err := r.Cookie("AccessToken")
+		if err != nil {
+			h.error(w, r, http.StatusUnauthorized, err)
+			return
+		}
+
+		u, err := h.services.User.Get(r.Context(), cookie.Value)
+		if err != nil {
 			switch err {
 			case errors.ErrUnauthorized:
 				h.error(w, r, http.StatusUnauthorized, err)
@@ -210,5 +265,7 @@ func (h *Handler) Update() http.HandlerFunc {
 				return
 			}
 		}
+
+		h.respond(w, r, http.StatusOK, u)
 	}
 }

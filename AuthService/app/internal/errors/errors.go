@@ -11,5 +11,6 @@ var (
 	ErrPasswordLength       = errors.New("password length must be more than six symbols")
 	ErrOldPasswordEqualNew  = errors.New("new password the same as old one")
 	ErrPasswordIsWrong      = errors.New("password is wrong")
+	ErrOldPasswordIsWrong   = errors.New("old password is wrong")
 	ErrUnauthorized         = errors.New("unauthorized")
 )

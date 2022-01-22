@@ -149,7 +149,7 @@ func (s *userService) Refresh(ctx context.Context, rt string, ua string, fp stri
 	return tokens, nil
 }
 
-func (s *userService) Update(ctx context.Context, dto *domain.UserUpdateDTO, at string) error {
+func (s *userService) UpdateEmail(ctx context.Context, dto *domain.UserUpdateEmailDTO, at string) error {
 	sub, _, err := s.m.ParseToken(at)
 	if err != nil {
 		return err
@@ -169,16 +169,46 @@ func (s *userService) Update(ctx context.Context, dto *domain.UserUpdateDTO, at 
 		return err
 	}
 
-	if err := CheckPassword(u, dto.OldPassword); err != nil {
+	u.Email = dto.Email
+
+	if err := s.r.Update(u); err != nil {
 		return err
 	}
 
-	hash, err := GeneratePasswordHash(dto.NewPassword)
+	return nil
+}
+
+func (s *userService) UpdatePassword(ctx context.Context, dto *domain.UserUpdatePasswordDTO, at string) error {
+	sub, _, err := s.m.ParseToken(at)
 	if err != nil {
 		return err
 	}
 
-	u.PasswordHash = hash
+	if err := dto.Validate(); err != nil {
+		return err
+	}
+
+	id, err := strconv.Atoi(sub)
+	if err != nil {
+		return err
+	}
+
+	u, err := s.r.GetById(id)
+	if err != nil {
+		return err
+	}
+
+	err = CheckPassword(u, dto.OldPassword)
+	if err != nil {
+		return errors.ErrOldPasswordIsWrong
+	}
+
+	_, err = GeneratePasswordHash(dto.NewPassword)
+	if err != nil {
+		return err
+	}
+
+	u.PasswordHash = dto.NewPassword
 
 	if err := s.r.Update(u); err != nil {
 		return err
@@ -212,4 +242,23 @@ func (s *userService) Delete(ctx context.Context, password string, at string) er
 	}
 
 	return nil
+}
+
+func (s *userService) Get(ctx context.Context, at string) (*domain.User, error) {
+	sub, _, err := s.m.ParseToken(at)
+	if err != nil {
+		return nil, err
+	}
+
+	id, err := strconv.Atoi(sub)
+	if err != nil {
+		return nil, err
+	}
+
+	u, err := s.r.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return u, nil
 }

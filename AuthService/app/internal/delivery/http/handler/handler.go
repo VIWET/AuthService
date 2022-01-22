@@ -25,10 +25,11 @@ func (h *Handler) configureRouter() {
 
 	auth.Handle("/user/sign-up", h.SignUpUser()).Methods("POST")
 	auth.Handle("/brewery/sign-up", h.SignUpBrewery()).Methods("POST")
-	auth.Handle("/refresh", h.Refresh()).Methods("POST")
 	auth.Handle("/sign-in", h.SignIn()).Methods("POST")
+	auth.Handle("/refresh", h.Refresh()).Methods("POST")
 	auth.Handle("/delete", h.Delete()).Methods("DELETE")
 	auth.Handle("/update", h.Update()).Methods("PUT")
+	auth.Handle("/get", h.GetUserData()).Methods("GET")
 }
 
 func (h *Handler) GetRouter() *mux.Router {
