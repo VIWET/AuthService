@@ -56,7 +56,7 @@ func (r *userRepository) GetById(id int) (*domain.User, error) {
 			"LEFT JOIN roles AS r ON u.role_id = r.id "+
 			"LEFT JOIN users_breweries AS ub ON ub.user_id = u.id "+
 			"LEFT JOIN users_profiles AS up ON up.user_id = u.id "+
-			"WHERE u.id = $1",
+			"WHERE CASE WHEN r.role_name = 'brewery' THEN ub.id = $1 ELSE up.id = $1 END ",
 		id,
 	).Scan(&u.ID, &u.Email, &u.PasswordHash, &u.Role, &u.ProfileID); err != nil {
 		if err == sql.ErrNoRows {

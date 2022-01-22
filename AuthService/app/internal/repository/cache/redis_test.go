@@ -49,3 +49,32 @@ func TestRedisCacheRepository_Get(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, rs, rs_test)
 }
+
+func TestRedisCacheRepository_Delete(t *testing.T) {
+	c := cache.TestRedisCache(t, config)
+
+	r := cache.NewRedisCacheRepository(c, config.Expires)
+
+	rt := "sdkfjnsijdfnsjdfmjsinfjsndflm"
+
+	rs := &domain.RefreshSession{
+		ProfileID:   1,
+		Role:        "user",
+		UserAgent:   "UserAgent",
+		Fingerprint: "hjabsd41561fihsdnfihsdnfih615df6s4df65s1df65s41df65s1df651sf",
+	}
+
+	err := r.Set(rt, rs)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	rs_test, err := r.Get(rt)
+	assert.NoError(t, err)
+	assert.Equal(t, rs, rs_test)
+	err = r.Delete(rt)
+	assert.NoError(t, err)
+	rs_test, err = r.Get(rt)
+	assert.Nil(t, rs_test)
+	assert.Error(t, err)
+}

@@ -110,7 +110,7 @@ func (s *Server) configureCache() error {
 }
 
 func (s *Server) configureTokenManager() error {
-	tokenManager, err := jwt.NewTokenManager(s.config.Salt)
+	tokenManager, err := jwt.NewTokenManager(s.config.Salt, s.config.CacheConfig.Expires)
 	if err != nil {
 		s.logger.Fatal(err)
 		return err

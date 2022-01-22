@@ -11,26 +11,29 @@ import (
 )
 
 type TokenManager interface {
-	GenerateToken(int, string, string) (string, error)
+	GenerateToken(int, string) (string, error)
 	GenerateRefreshToken() (string, error)
 	ParseToken(string) (string, string, error)
+	GetExpTime() time.Duration
 }
 
 type Manager struct {
 	key []byte
+	exp time.Duration
 }
 
-func NewTokenManager(key string) (TokenManager, error) {
+func NewTokenManager(key string, exp time.Duration) (TokenManager, error) {
 	if key == "" {
 		return nil, errors.New("empty token manager key")
 	}
 
 	return &Manager{
 		key: []byte(key),
+		exp: exp,
 	}, nil
 }
 
-func (m *Manager) GenerateToken(id int, email string, role string) (string, error) {
+func (m *Manager) GenerateToken(id int, role string) (string, error) {
 	claims := jwt.StandardClaims{
 		Audience:  role,
 		ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
@@ -42,6 +45,10 @@ func (m *Manager) GenerateToken(id int, email string, role string) (string, erro
 		return "", err
 	}
 	return ss, nil
+}
+
+func (m *Manager) GetExpTime() time.Duration {
+	return time.Duration(time.Now().Add(m.exp).Unix())
 }
 
 func (m *Manager) GenerateRefreshToken() (string, error) {

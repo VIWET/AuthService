@@ -15,6 +15,7 @@ type UserRepository interface {
 type CacheRepository interface {
 	Set(string, *domain.RefreshSession) error
 	Get(string) (*domain.RefreshSession, error)
+	Delete(string) error
 }
 
 type Repositories struct {

@@ -50,3 +50,12 @@ func (c *redisCacheRepository) Get(rt string) (*domain.RefreshSession, error) {
 
 	return rs, nil
 }
+
+func (c *redisCacheRepository) Delete(rt string) error {
+	_, err := c.client.Del(rt).Result()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

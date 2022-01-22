@@ -2,8 +2,8 @@ package service_test
 
 import (
 	"context"
-	"strconv"
 	"testing"
+	"time"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/errors"
@@ -19,7 +19,7 @@ func TestUserService_SignUp(t *testing.T) {
 
 	cr := testcache.NewTestCacheRepository()
 
-	m, err := jwt.NewTokenManager("123")
+	m, err := jwt.NewTokenManager("123", time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -118,24 +118,94 @@ func TestUserService_SignUp(t *testing.T) {
 			PasswordConfirm: c.PasswordConfirm,
 		}
 		if c.Valid {
-			u, tokens, err := s.SignUp(ctx, dto, c.Role)
+			tokens, err := s.SignUp(ctx, dto, c.Role, "")
 			assert.NoError(t, err)
-			assert.NotNil(t, u)
 			assert.NotEmpty(t, tokens.AccessToken)
 			assert.NotEmpty(t, tokens.RefreshToken)
-			profIdS, role, _ := m.ParseToken(tokens.AccessToken)
-			profId, err := strconv.Atoi(profIdS)
-			if err != nil {
-				t.Fatal(err)
-			}
-			assert.Equal(t, u.ProfileID, profId)
-			assert.Equal(t, u.Role, role)
 		} else {
-			u, tokens, err := s.SignUp(ctx, dto, c.Role)
+			tokens, err := s.SignUp(ctx, dto, c.Role, "")
 			assert.EqualError(t, err, c.Err.Error())
-			assert.Nil(t, u)
 			assert.Empty(t, tokens.AccessToken)
 			assert.Empty(t, tokens.RefreshToken)
 		}
 	}
+}
+
+func TestUserService_Refresh(t *testing.T) {
+	r := teststore.NewTestUserRepository()
+
+	cr := testcache.NewTestCacheRepository()
+
+	m, err := jwt.NewTokenManager("123", time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := service.NewUserService(r, m, cr)
+
+	dto := &domain.UserCreateDTO{
+		Email:           "ex@ex.com",
+		Password:        "example",
+		PasswordConfirm: "example",
+		Fingerprint:     "avfhsbdfjhbsdjfbsdjbfhjsbfshdbfjhdbsfjhdbsf",
+	}
+
+	ctx := context.Background()
+	ua := "sjdbfjdbsfjhsndfjhbhgygwqbneiqgwudh"
+
+	tokens, err := s.SignUp(ctx, dto, "user", ua)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(time.Second)
+
+	tokens_test, err := s.Refresh(ctx, tokens.RefreshToken, ua, "sdfee")
+	assert.Error(t, err)
+	assert.Empty(t, tokens_test)
+	tokens_test, err = s.Refresh(ctx, tokens.RefreshToken, ua, dto.Fingerprint)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, tokens_test)
+	assert.NotEqual(t, tokens.AccessToken, tokens_test.AccessToken)
+	assert.NotEqual(t, tokens.RefreshToken, tokens_test.RefreshToken)
+}
+
+func TestUserService_SignIn(t *testing.T) {
+	r := teststore.NewTestUserRepository()
+
+	cr := testcache.NewTestCacheRepository()
+
+	m, err := jwt.NewTokenManager("123", time.Minute)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	s := service.NewUserService(r, m, cr)
+
+	dto := &domain.UserCreateDTO{
+		Email:           "ex@ex.com",
+		Password:        "example",
+		PasswordConfirm: "example",
+		Fingerprint:     "avfhsbdfjhbsdjfbsdjbfhjsbfshdbfjhdbsfjhdbsf",
+	}
+
+	ctx := context.Background()
+	ua := "sjdbfjdbsfjhsndfjhbhgygwqbneiqgwudh"
+
+	tokens, err := s.SignUp(ctx, dto, "user", ua)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	time.Sleep(time.Second)
+
+	tokens_test, err := s.SignIn(ctx, &domain.UserSignIn{
+		Email:       "ex@ex.com",
+		Password:    "example",
+		Fingerprint: "avfhsbdfjhbsdjfbsdjbfhjsbfshdbfjhdbsfjhdbsf",
+	}, ua)
+	assert.NoError(t, err)
+	assert.NotEmpty(t, tokens_test)
+	assert.NotEqual(t, tokens.AccessToken, tokens_test.AccessToken)
+	assert.NotEqual(t, tokens.RefreshToken, tokens_test.RefreshToken)
 }

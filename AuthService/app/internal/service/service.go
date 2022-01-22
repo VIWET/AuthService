@@ -4,14 +4,18 @@ import (
 	"context"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
+	"github.com/VIWET/Beeracle/AuthService/internal/errors"
 	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
 	"github.com/VIWET/Beeracle/AuthService/internal/repository"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type User interface {
-	SignUp(context.Context, *domain.UserCreateDTO, string) (*domain.User, jwt.Tokens, error)
-	// SignIn(context.Context, *domain.UserSignIn) (string, string, error)
+	SignUp(ctx context.Context, dto *domain.UserCreateDTO, role string, ua string) (jwt.Tokens, error)
+	SignIn(ctx context.Context, dto *domain.UserSignIn, ua string) (jwt.Tokens, error)
+	Refresh(ctx context.Context, rt string, ua string, fp string) (jwt.Tokens, error)
+	Delete(ctx context.Context, password string, at string) error
+	Update(ctx context.Context, dto *domain.UserUpdateDTO, at string) error
 }
 
 type Services struct {
@@ -35,6 +39,9 @@ func GeneratePasswordHash(p string) (string, error) {
 func CheckPassword(u *domain.User, p string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(p))
 	if err != nil {
+		if err == bcrypt.ErrMismatchedHashAndPassword {
+			return errors.ErrUnauthorized
+		}
 		return err
 	}
 	return nil

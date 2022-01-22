@@ -24,6 +24,11 @@ func (h *Handler) configureRouter() {
 	auth := h.router.PathPrefix("/api/auth").Subrouter()
 
 	auth.Handle("/user/sign-up", h.SignUpUser()).Methods("POST")
+	auth.Handle("/brewery/sign-up", h.SignUpBrewery()).Methods("POST")
+	auth.Handle("/refresh", h.Refresh()).Methods("POST")
+	auth.Handle("/sign-in", h.SignIn()).Methods("POST")
+	auth.Handle("/delete", h.Delete()).Methods("DELETE")
+	auth.Handle("/update", h.Update()).Methods("PUT")
 }
 
 func (h *Handler) GetRouter() *mux.Router {

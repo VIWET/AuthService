@@ -17,14 +17,16 @@ type User struct {
 }
 
 type UserSignIn struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email       string `json:"email"`
+	Password    string `json:"password"`
+	Fingerprint string `json:"fingerprint"`
 }
 
 type UserCreateDTO struct {
 	Email           string `json:"email"`
 	Password        string `json:"password"`
 	PasswordConfirm string `json:"passwordConfirm"`
+	Fingerprint     string `json:"fingerprint"`
 }
 
 type UserUpdateDTO struct {
@@ -32,6 +34,7 @@ type UserUpdateDTO struct {
 	OldPassword        string `json:"oldPassword,omitempty"`
 	NewPassword        string `json:"newPassword,omitempty"`
 	NewPasswordConfirm string `json:"newPasswordConfirm,omitempty"`
+	Fingerprint        string `json:"fingerprint"`
 }
 
 type RefreshSession struct {
@@ -63,6 +66,26 @@ func NewUser(email string, role string, passwordHash string) *User {
 		Role:         role,
 		PasswordHash: passwordHash,
 	}
+}
+
+func (dto *UserSignIn) Validate() error {
+	if dto.Email == "" {
+		return errors.ErrEmailIsEmpty
+	}
+
+	if !emailRegex.MatchString(dto.Email) {
+		return errors.ErrEmailIsNotValid
+	}
+
+	if dto.Password == "" {
+		return errors.ErrPasswordIsEmpty
+	}
+
+	if len(dto.Password) < 6 {
+		return errors.ErrPasswordLength
+	}
+
+	return nil
 }
 
 func (dto *UserCreateDTO) Validate() error {

@@ -35,7 +35,7 @@ func TestUserRepository_GetByID(t *testing.T) {
 		t.Fatal("error on creating:", err)
 	}
 
-	ut, err := r.GetById(u.ID)
+	ut, err := r.GetById(u.ProfileID)
 	assert.NoError(t, err)
 	assert.Equal(t, u, ut)
 }
@@ -72,7 +72,7 @@ func TestUserRepository_Update(t *testing.T) {
 	u.PasswordHash = "example2"
 
 	assert.NoError(t, r.Update(u))
-	ut, err := r.GetById(u.ID)
+	ut, err := r.GetById(u.ProfileID)
 	if err != nil {
 		t.Fatal("error on getting by id: ", err)
 	}
@@ -91,6 +91,6 @@ func TestUserRepository_Delete(t *testing.T) {
 	}
 
 	assert.NoError(t, r.Delete(u.ID))
-	_, err := r.GetById(u.ID)
+	_, err := r.GetById(u.ProfileID)
 	assert.EqualError(t, err, errors.ErrRecordNotFound.Error())
 }

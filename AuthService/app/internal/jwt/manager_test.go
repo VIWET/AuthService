@@ -1,8 +1,9 @@
 package jwt_test
 
 import (
-	"fmt"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/jwt"
@@ -11,31 +12,36 @@ import (
 )
 
 func TestManager_GenerateUserToken(t *testing.T) {
-	m, err := jwt.NewTokenManager("Secret key")
+	m, err := jwt.NewTokenManager("Secret key", time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	u := domain.TestUser()
 
-	ss, err := m.GenerateToken(u.ID, u.Email, "user")
+	ss, err := m.GenerateToken(u.ID, "user")
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 }
 
 func TestManager_ParseToken(t *testing.T) {
-	m, err := jwt.NewTokenManager("Secret key")
+	m, err := jwt.NewTokenManager("Secret key", time.Minute)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	u := domain.TestUser()
 
-	ss, err := m.GenerateToken(u.ProfileID, u.Email, "user")
+	ss, err := m.GenerateToken(u.ProfileID, "user")
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
-	id, sub, err := m.ParseToken(ss)
+	sub, aud, err := m.ParseToken(ss)
 	assert.NoError(t, err)
-	fmt.Println(id, sub)
+	id, err := strconv.Atoi(sub)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, u.ProfileID, id)
+	assert.Equal(t, u.Role, aud)
 }

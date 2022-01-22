@@ -29,3 +29,13 @@ func (c *TestCacheRepository) Get(rt string) (*domain.RefreshSession, error) {
 
 	return rs, nil
 }
+
+func (c *TestCacheRepository) Delete(rt string) error {
+	_, ok := c.db[rt]
+	if !ok {
+		return errors.ErrRecordNotFound
+	}
+
+	delete(c.db, rt)
+	return nil
+}
