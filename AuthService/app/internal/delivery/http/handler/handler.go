@@ -29,7 +29,7 @@ func (h *Handler) configureRouter() {
 	auth.Handle("/user/sign-up", h.SignUpUser()).Methods("POST")
 	auth.Handle("/brewery/sign-up", h.SignUpBrewery()).Methods("POST")
 	auth.Handle("/sign-in", h.SignIn()).Methods("POST")
-	auth.Handle("/refresh", h.Middleware(h.Refresh())).Methods("POST")
+	auth.Handle("/refresh", h.Refresh()).Methods("POST")
 	auth.Handle("/delete", h.Middleware(h.Delete())).Methods("DELETE")
 	auth.Handle("/update", h.Middleware(h.Update())).Methods("PUT")
 }
