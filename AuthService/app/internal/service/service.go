@@ -15,6 +15,7 @@ type User interface {
 	SignIn(ctx context.Context, dto *domain.UserSignIn, ua string) (jwt.Tokens, error)
 	Refresh(ctx context.Context, rt string, ua string, fp string) (jwt.Tokens, error)
 	Update(ctx context.Context, dto *domain.UserUpdateDTO) error
+	Delete(ctx context.Context, password string) error
 }
 
 type Services struct {

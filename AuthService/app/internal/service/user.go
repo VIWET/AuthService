@@ -186,3 +186,22 @@ func (s *userService) Update(ctx context.Context, dto *domain.UserUpdateDTO) err
 
 	return nil
 }
+
+func (s *userService) Delete(ctx context.Context, password string) error {
+	id := ctx.Value(domain.UID("id")).(int)
+
+	u, err := s.r.GetById(id)
+	if err != nil {
+		return err
+	}
+
+	if err := CheckPassword(u, password); err != nil {
+		return err
+	}
+
+	if err := s.r.Delete(id); err != nil {
+		return err
+	}
+
+	return nil
+}

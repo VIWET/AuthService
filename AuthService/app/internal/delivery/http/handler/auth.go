@@ -154,37 +154,31 @@ func (h *Handler) SignIn() http.HandlerFunc {
 	}
 }
 
-// func (h *Handler) Delete() http.HandlerFunc {
+func (h *Handler) Delete() http.HandlerFunc {
 
-// 	type Delete struct {
-// 		Password string `json:"password"`
-// 	}
+	type Delete struct {
+		Password string `json:"password"`
+	}
 
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		req := &Delete{}
-// 		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
-// 			h.error(w, r, http.StatusUnprocessableEntity, err)
-// 			return
-// 		}
+	return func(w http.ResponseWriter, r *http.Request) {
+		req := &Delete{}
+		if err := json.NewDecoder(r.Body).Decode(req); err != nil {
+			h.error(w, r, http.StatusUnprocessableEntity, err)
+			return
+		}
 
-// 		cookie, err := r.Cookie("AccessToken")
-// 		if err != nil {
-// 			h.error(w, r, http.StatusUnauthorized, err)
-// 			return
-// 		}
-
-// 		if err := h.services.User.Delete(r.Context(), req.Password, cookie.Value); err != nil {
-// 			switch err {
-// 			case errors.ErrUnauthorized:
-// 				h.error(w, r, http.StatusUnauthorized, err)
-// 				return
-// 			default:
-// 				h.error(w, r, http.StatusInternalServerError, err)
-// 				return
-// 			}
-// 		}
-// 	}
-// }
+		if err := h.services.User.Delete(r.Context(), req.Password); err != nil {
+			switch err {
+			case errors.ErrUnauthorized:
+				h.error(w, r, http.StatusUnauthorized, err)
+				return
+			default:
+				h.error(w, r, http.StatusInternalServerError, err)
+				return
+			}
+		}
+	}
+}
 
 func (h *Handler) Update() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
