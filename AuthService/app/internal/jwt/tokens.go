@@ -1,6 +1,15 @@
 package jwt
 
-import "time"
+import (
+	"time"
+
+	"github.com/dgrijalva/jwt-go"
+)
+
+type tokenClaims struct {
+	ProfileID int `json:"profileId"`
+	jwt.StandardClaims
+}
 
 type Tokens struct {
 	AccessToken  string        `json:"accessToken"`

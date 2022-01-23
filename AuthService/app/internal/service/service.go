@@ -14,10 +14,7 @@ type User interface {
 	SignUp(ctx context.Context, dto *domain.UserCreateDTO, role string, ua string) (jwt.Tokens, error)
 	SignIn(ctx context.Context, dto *domain.UserSignIn, ua string) (jwt.Tokens, error)
 	Refresh(ctx context.Context, rt string, ua string, fp string) (jwt.Tokens, error)
-	Delete(ctx context.Context, password string, at string) error
-	UpdateEmail(ctx context.Context, dto *domain.UserUpdateEmailDTO, at string) error
-	UpdatePassword(ctx context.Context, dto *domain.UserUpdatePasswordDTO, at string) error
-	Get(ctx context.Context, at string) (*domain.User, error)
+	Update(ctx context.Context, dto *domain.UserUpdateDTO) error
 }
 
 type Services struct {
@@ -42,7 +39,7 @@ func CheckPassword(u *domain.User, p string) error {
 	err := bcrypt.CompareHashAndPassword([]byte(u.PasswordHash), []byte(p))
 	if err != nil {
 		if err == bcrypt.ErrMismatchedHashAndPassword {
-			return errors.ErrUnauthorized
+			return errors.ErrPasswordIsWrong
 		}
 		return err
 	}

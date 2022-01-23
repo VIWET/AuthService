@@ -1,6 +1,8 @@
 port: ":8080"
 logLevel: "debug"
+
 salt: "secret"
+token_exp: 15m
 
 db:
   host: "localhost"
@@ -14,3 +16,4 @@ cache:
   port: "6379"
   db: 1
   password: ""
+  exp: 60m

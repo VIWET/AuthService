@@ -36,13 +36,12 @@ func (r *testUserRepository) Create(u *domain.User) error {
 }
 
 func (r *testUserRepository) GetById(id int) (*domain.User, error) {
-	for _, u := range r.db {
-		if u.ProfileID == id {
-			return u, nil
-		}
+	u, ok := r.db[id]
+	if !ok {
+		return nil, errors.ErrRecordNotFound
 	}
 
-	return nil, errors.ErrRecordNotFound
+	return u, nil
 }
 
 func (r *testUserRepository) GetByEmail(email string) (*domain.User, error) {

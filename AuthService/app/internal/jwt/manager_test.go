@@ -1,7 +1,6 @@
 package jwt_test
 
 import (
-	"strconv"
 	"testing"
 	"time"
 
@@ -19,7 +18,7 @@ func TestManager_GenerateUserToken(t *testing.T) {
 
 	u := domain.TestUser()
 
-	ss, err := m.GenerateToken(u.ID, "user")
+	ss, err := m.GenerateToken(u.ID, "user", u.ProfileID)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 }
@@ -32,16 +31,11 @@ func TestManager_ParseToken(t *testing.T) {
 
 	u := domain.TestUser()
 
-	ss, err := m.GenerateToken(u.ProfileID, "user")
+	ss, err := m.GenerateToken(u.ID, "user", u.ProfileID)
 	assert.NoError(t, err)
 	assert.NotNil(t, ss)
 
-	sub, aud, err := m.ParseToken(ss)
+	c, err := m.ParseToken(ss)
 	assert.NoError(t, err)
-	id, err := strconv.Atoi(sub)
-	if err != nil {
-		t.Fatal(err)
-	}
-	assert.Equal(t, u.ProfileID, id)
-	assert.Equal(t, u.Role, aud)
+	assert.Equal(t, u.ProfileID, c.ProfileID)
 }

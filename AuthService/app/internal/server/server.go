@@ -58,7 +58,7 @@ func (s *Server) Run() error {
 	repos := sqlstore.NewRepositories(s.db, s.cache, s.config.CacheConfig.Expires)
 	services := service.NewServices(repos, s.tokenManager)
 
-	s.handler = handler.New(services, s.logger)
+	s.handler = handler.New(services, s.logger, s.tokenManager)
 
 	return http.ListenAndServe(s.config.HttpPort, s.handler.GetRouter())
 }
@@ -110,7 +110,7 @@ func (s *Server) configureCache() error {
 }
 
 func (s *Server) configureTokenManager() error {
-	tokenManager, err := jwt.NewTokenManager(s.config.Salt, s.config.CacheConfig.Expires)
+	tokenManager, err := jwt.NewTokenManager(s.config.Salt, s.config.TokenExp)
 	if err != nil {
 		s.logger.Fatal(err)
 		return err

@@ -8,6 +8,8 @@ import (
 
 var emailRegex = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
+type UID string
+
 type User struct {
 	ID           int    `json:"-"`
 	ProfileID    int    `json:"id"`
@@ -29,17 +31,15 @@ type UserCreateDTO struct {
 	Fingerprint     string `json:"fingerprint"`
 }
 
-type UserUpdateEmailDTO struct {
-	Email string `json:"email,omitempty"`
-}
-
-type UserUpdatePasswordDTO struct {
-	OldPassword        string `json:"oldPassword,omitempty"`
-	NewPassword        string `json:"newPassword,omitempty"`
-	NewPasswordConfirm string `json:"newPasswordConfirm,omitempty"`
+type UserUpdateDTO struct {
+	Email              *string `json:"email,omitempty"`
+	OldPassword        *string `json:"oldPassword,omitempty"`
+	NewPassword        *string `json:"newPassword,omitempty"`
+	NewPasswordConfirm *string `json:"newPasswordConfirm,omitempty"`
 }
 
 type RefreshSession struct {
+	ID          int    `json:"id"`
 	ProfileID   int    `json:"profileId"`
 	Role        string `json:"role"`
 	UserAgent   string `json:"ua"`
@@ -114,33 +114,60 @@ func (dto *UserCreateDTO) Validate() error {
 	return nil
 }
 
-func (dto *UserUpdateEmailDTO) Validate() error {
-	if dto.Email == "" {
-		return errors.ErrEmailIsEmpty
+func (dto *UserUpdateDTO) Validate() error {
+	if dto.Email == nil && dto.OldPassword == nil && dto.NewPassword == nil && dto.NewPasswordConfirm == nil {
+		return errors.ErrEmptyInput
 	}
 
-	if !emailRegex.MatchString(dto.Email) {
-		return errors.ErrEmailIsNotValid
+	if dto.Email != nil {
+		if *dto.Email == "" {
+			return errors.ErrEmailIsEmpty
+		}
+
+		if !emailRegex.MatchString(*dto.Email) {
+			return errors.ErrEmailIsNotValid
+		}
 	}
 
-	return nil
-}
-
-func (dto *UserUpdatePasswordDTO) Validate() error {
-	if dto.OldPassword == dto.NewPassword {
-		return errors.ErrOldPasswordEqualNew
+	pwdCount := 0
+	if dto.OldPassword != nil {
+		pwdCount++
+	}
+	if dto.NewPassword != nil {
+		pwdCount++
+	}
+	if dto.NewPasswordConfirm != nil {
+		pwdCount++
 	}
 
-	if dto.NewPassword == "" {
-		return errors.ErrPasswordIsEmpty
+	if pwdCount == 3 {
+		if *dto.NewPassword == "" {
+			return errors.ErrNewPasswordIsEmpty
+		}
+
+		if *dto.OldPassword == "" {
+			return errors.ErrOldPasswordIsEmpty
+		}
+
+		if *dto.NewPasswordConfirm == "" {
+			return errors.ErrNewPasswordConfirmIsEmpty
+		}
+
+		if *dto.OldPassword == *dto.NewPassword {
+			return errors.ErrOldPasswordEqualNew
+		}
+
+		if len(*dto.NewPassword) < 6 {
+			return errors.ErrPasswordLength
+		}
+
+		if *dto.NewPassword != *dto.NewPasswordConfirm {
+			return errors.ErrPasswordConfirmation
+		}
 	}
 
-	if len(dto.NewPassword) < 6 {
-		return errors.ErrPasswordLength
-	}
-
-	if dto.NewPassword != dto.NewPasswordConfirm {
-		return errors.ErrPasswordConfirmation
+	if pwdCount > 0 && pwdCount < 3 {
+		return errors.ErrNotAllValues
 	}
 
 	return nil

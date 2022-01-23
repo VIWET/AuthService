@@ -11,9 +11,9 @@ import (
 )
 
 type TokenManager interface {
-	GenerateToken(int, string) (string, error)
+	GenerateToken(id int, role string, profileId int) (string, error)
 	GenerateRefreshToken() (string, error)
-	ParseToken(string) (string, string, error)
+	ParseToken(token string) (*tokenClaims, error)
 	GetExpTime() time.Duration
 }
 
@@ -33,11 +33,14 @@ func NewTokenManager(key string, exp time.Duration) (TokenManager, error) {
 	}, nil
 }
 
-func (m *Manager) GenerateToken(id int, role string) (string, error) {
-	claims := jwt.StandardClaims{
-		Audience:  role,
-		ExpiresAt: time.Now().Add(time.Minute * 60).Unix(),
-		Subject:   strconv.Itoa(id),
+func (m *Manager) GenerateToken(id int, role string, profileId int) (string, error) {
+	claims := tokenClaims{
+		profileId,
+		jwt.StandardClaims{
+			Audience:  role,
+			ExpiresAt: time.Now().Add(time.Minute * m.exp).Unix(),
+			Subject:   strconv.Itoa(id),
+		},
 	}
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	ss, err := token.SignedString(m.key)
@@ -65,8 +68,8 @@ func (m *Manager) GenerateRefreshToken() (string, error) {
 	return fmt.Sprintf("%x", b), nil
 }
 
-func (m *Manager) ParseToken(token string) (string, string, error) {
-	t, err := jwt.Parse(token, func(t *jwt.Token) (interface{}, error) {
+func (m *Manager) ParseToken(token string) (*tokenClaims, error) {
+	t, err := jwt.ParseWithClaims(token, &tokenClaims{}, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("unexpected signing method: %v", t.Header["alg"])
 		}
@@ -75,13 +78,13 @@ func (m *Manager) ParseToken(token string) (string, string, error) {
 	})
 
 	if err != nil {
-		return "", "", err
+		return nil, err
 	}
 
-	claims, ok := t.Claims.(jwt.MapClaims)
+	claims, ok := t.Claims.(*tokenClaims)
 	if !ok {
-		return "", "", fmt.Errorf("error get claims from token")
+		return nil, fmt.Errorf("error get claims from token")
 	}
 
-	return claims["sub"].(string), claims["aud"].(string), nil
+	return claims, nil
 }

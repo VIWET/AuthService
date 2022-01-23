@@ -2,7 +2,6 @@ package service
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/VIWET/Beeracle/AuthService/internal/domain"
 	"github.com/VIWET/Beeracle/AuthService/internal/errors"
@@ -42,7 +41,7 @@ func (s *userService) SignUp(ctx context.Context, dto *domain.UserCreateDTO, rol
 		return tokens, err
 	}
 
-	accessToken, err := s.m.GenerateToken(u.ProfileID, u.Role)
+	accessToken, err := s.m.GenerateToken(u.ID, u.Role, u.ProfileID)
 	if err != nil {
 		return tokens, err
 	}
@@ -84,7 +83,7 @@ func (s *userService) SignIn(ctx context.Context, dto *domain.UserSignIn, ua str
 		return tokens, errors.ErrUnauthorized
 	}
 
-	accessToken, err := s.m.GenerateToken(u.ProfileID, u.Role)
+	accessToken, err := s.m.GenerateToken(u.ID, u.Role, u.ProfileID)
 	if err != nil {
 		return tokens, err
 	}
@@ -127,7 +126,7 @@ func (s *userService) Refresh(ctx context.Context, rt string, ua string, fp stri
 		return tokens, err
 	}
 
-	accessToken, err := s.m.GenerateToken(rs.ProfileID, rs.Role)
+	accessToken, err := s.m.GenerateToken(rs.ID, rs.Role, rs.ProfileID)
 	if err != nil {
 		return tokens, err
 	}
@@ -149,116 +148,41 @@ func (s *userService) Refresh(ctx context.Context, rt string, ua string, fp stri
 	return tokens, nil
 }
 
-func (s *userService) UpdateEmail(ctx context.Context, dto *domain.UserUpdateEmailDTO, at string) error {
-	sub, _, err := s.m.ParseToken(at)
-	if err != nil {
-		return err
-	}
-
+func (s *userService) Update(ctx context.Context, dto *domain.UserUpdateDTO) error {
 	if err := dto.Validate(); err != nil {
 		return err
 	}
 
-	id, err := strconv.Atoi(sub)
-	if err != nil {
-		return err
-	}
+	id := ctx.Value(domain.UID("id")).(int)
 
 	u, err := s.r.GetById(id)
 	if err != nil {
 		return err
 	}
 
-	u.Email = dto.Email
+	if dto.Email != nil {
+		u.Email = *dto.Email
+	}
+
+	if dto.NewPassword != nil {
+		if err := CheckPassword(u, *dto.OldPassword); err != nil {
+			if err == errors.ErrPasswordIsWrong {
+				return errors.ErrOldPasswordIsWrong
+			}
+			return err
+		}
+
+		hash, err := GeneratePasswordHash(*dto.NewPassword)
+		if err != nil {
+			return err
+		}
+
+		u.PasswordHash = hash
+	}
 
 	if err := s.r.Update(u); err != nil {
 		return err
 	}
 
 	return nil
-}
-
-func (s *userService) UpdatePassword(ctx context.Context, dto *domain.UserUpdatePasswordDTO, at string) error {
-	sub, _, err := s.m.ParseToken(at)
-	if err != nil {
-		return err
-	}
-
-	if err := dto.Validate(); err != nil {
-		return err
-	}
-
-	id, err := strconv.Atoi(sub)
-	if err != nil {
-		return err
-	}
-
-	u, err := s.r.GetById(id)
-	if err != nil {
-		return err
-	}
-
-	err = CheckPassword(u, dto.OldPassword)
-	if err != nil {
-		return errors.ErrOldPasswordIsWrong
-	}
-
-	_, err = GeneratePasswordHash(dto.NewPassword)
-	if err != nil {
-		return err
-	}
-
-	u.PasswordHash = dto.NewPassword
-
-	if err := s.r.Update(u); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *userService) Delete(ctx context.Context, password string, at string) error {
-	sub, _, err := s.m.ParseToken(at)
-	if err != nil {
-		return err
-	}
-
-	id, err := strconv.Atoi(sub)
-	if err != nil {
-		return err
-	}
-
-	u, err := s.r.GetById(id)
-	if err != nil {
-		return err
-	}
-
-	if err := CheckPassword(u, password); err != nil {
-		return err
-	}
-
-	if err := s.r.Delete(u.ID); err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (s *userService) Get(ctx context.Context, at string) (*domain.User, error) {
-	sub, _, err := s.m.ParseToken(at)
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := strconv.Atoi(sub)
-	if err != nil {
-		return nil, err
-	}
-
-	u, err := s.r.GetById(id)
-	if err != nil {
-		return nil, err
-	}
-
-	return u, nil
 }
